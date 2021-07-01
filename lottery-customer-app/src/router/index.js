@@ -3,7 +3,7 @@ import LotteryRounds from '@/components/LotteryRounds'
 import LotteryRound from '@/components/LotteryRound'
 import Admin from '@/components/Admin'
 import Register from '@/components/Register'
-import Bids from '@/components/Bids'
+
 
 const routers = [
     {
@@ -20,11 +20,6 @@ const routers = [
       path: '/lottery-rounds',
       name: 'LotteryRounds',
       component: LotteryRounds
-    },
-    {
-      path: '/bids',
-      name: 'Bids',
-      component: Bids
     },
     {
       path: '/lottery-round',

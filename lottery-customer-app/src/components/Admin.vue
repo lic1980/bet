@@ -12,14 +12,12 @@
             <el-tabs v-model="activeTab"  @tab-click="handleSwitchBids">
                 <el-tab-pane label="已投注" name="initiator">
                 <el-table :data="bids" style="width: 100%">
-                        <el-table-column prop="lotteryRound.title" label="标题"></el-table-column>
+                        <el-table-column prop="option.round.title" label="标题"></el-table-column>
                         <el-table-column  label="投注项">
                             <template slot-scope="scope">  
-                                <li v-for="(option, index) in scope.row.options" v-bind:key="index">
-                                目标：{{ option.option.optionText }}<br/>
-                                费用：{{ option.fee }}<br/>
-                                赔率：{{ option.odds }}
-                                </li>  
+                                目标：{{ scope.row.option.optionText }}<br/>
+                                费用：{{ scope.row.fee }}<br/>
+                                赔率：{{ scope.row.odds }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="createTime" label="投注时间">
@@ -38,14 +36,12 @@
                 </el-tab-pane>
                 <el-tab-pane label="已收注" name="recipient">
                 <el-table :data="bids" style="width: 100%">
-                        <el-table-column prop="lotteryRound.title" label="标题"></el-table-column>
+                        <el-table-column prop="option.round.title" label="标题"></el-table-column>
                         <el-table-column  label="投注项">
                             <template slot-scope="scope">  
-                                <li v-for="(option, index) in scope.row.options" v-bind:key="index">
-                                目标：{{ option.option.optionText }}<br/>
-                                费用：{{ option.fee }}<br/>
-                                赔率：{{ option.odds }}
-                                </li>  
+                                目标：{{ scope.row.option.optionText }}<br/>
+                                费用：{{ scope.row.fee }}<br/>
+                                赔率：{{ scope.row.odds }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="createTime" label="投注时间">
@@ -57,14 +53,12 @@
                 </el-tab-pane>
                 <el-tab-pane label="去收注" name="none">
                 <el-table :data="bids" style="width: 100%">
-                        <el-table-column prop="lotteryRound.title" label="标题"></el-table-column>
+                        <el-table-column prop="option.round.title" label="标题"></el-table-column>
                         <el-table-column  label="投注项">
                             <template slot-scope="scope">  
-                                <li v-for="(option, index) in scope.row.options" v-bind:key="index">
-                                目标：{{ option.option.optionText }}<br/>
-                                费用：{{ option.fee }}<br/>
-                                赔率：{{ option.odds }}
-                                </li>  
+                                目标：{{ scope.row.option.optionText }}<br/>
+                                费用：{{ scope.row.fee }}<br/>
+                                赔率：{{ scope.row.odds }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="createTime" label="投注时间">
@@ -162,7 +156,7 @@ export default {
             axios
                 .patch('http://localhost:8080/api/v1/customers/'+cusId+'/bids/' + bid.id, data)
                 .then(
-                    response => {
+                    () => {
                         let bids = []
                         this.$message("收注成功");
                         for (let i =0; i < this.bids.length; i++) {
@@ -171,7 +165,7 @@ export default {
                            }
                         }
                         this.bids = bids
-                        reloadCustomer(cusId)
+                        this.reloadCustomer(cusId)
                     })
                 .catch(function (error) { 
                     console.log(error);
@@ -204,7 +198,7 @@ export default {
     },
     mounted () {
         let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
-        reloadCustomer(cusId);
+        this.reloadCustomer(cusId);
         this.reloadBids("initiator");
     }
 }

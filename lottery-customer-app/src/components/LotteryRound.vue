@@ -5,6 +5,7 @@
         </div>
         <div>
             <div style="line-height: 36px;">
+                
                 <div >
                     彩票名称：{{ lotteryRound.lottery.name }}
                 </div>
@@ -21,15 +22,16 @@
                         placeholder="Select date and time">
                     </el-date-picker>
                 </div>
+               
                 <div style="overflow:hidden" v-for="(optionsItemId, itemIndex) in optionsByItemId.entries()" v-bind:key="itemIndex">
                     <div></div>
                     <div style="float:left;">
                         {{ itemByItemId.get(optionsItemId[0]).name }}： 
                     </div>
                     <div style="float:left;margin:2px;" v-for="(option, optionIndex) of optionsItemId[1]" v-bind:key="optionIndex">
-                        <template v-if="roundOptionByOptionId.has(option.id)">
+                        <template v-if="roundOptionByOptionId.has(option.id) ">
                         <el-button v-on:click="openBidDialog(roundOptionByOptionId.get(option.id))"  size="small" >
-                            <div>
+                            <div v-if=" roundOptionByOptionId.get(option.id).odds > 1">
                             {{ roundOptionByOptionId.get(option.id).optionText }}&nbsp;&nbsp;{{ roundOptionByOptionId.get(option.id).odds }}
                             </div>
                         </el-button>
@@ -49,10 +51,10 @@
             <div>
                 <el-form>
                  <el-form-item label="赔率：" label-width="100px">
-                    <el-input-number v-model="customerBidOption.odds" :precision="1" size="small" ></el-input-number>
+                    <el-input-number v-model="customerBid.odds" :precision="1" size="small" ></el-input-number>
                  </el-form-item>
                  <el-form-item label="本金：" label-width="100px">
-                    <el-input-number v-model="customerBidOption.fee" :precision="0" size="small" ></el-input-number>
+                    <el-input-number v-model="customerBid.fee" :precision="0" size="small" ></el-input-number>
                  </el-form-item>
                 </el-form>
             </div>
@@ -77,7 +79,7 @@ export default {
             customer: { "id": "", "deposit": 0 },
             lotteryRound: {"lottery": {"name":""}},
             lotteryRoundOption: {},
-            customerBidOption: {"odds":0, "fee": 0},
+            customerBid: {"odds":0, "fee": 0},
             optionsByItemId: new Map(),
             itemByItemId: new Map(),
             roundOptionByOptionId : new Map(),
@@ -87,10 +89,14 @@ export default {
         openBidDialog(roundOption) {
             this.lotteryRoundOption = roundOption
             this.bidDialogVisible = true
-            this.customerBidOption.odds = roundOption.odds
+            this.customerBid.odds = roundOption.odds
         },
         bid: function() {
             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
+            if (this.optionBidFee < global.FEE_MIN) {
+                this.$message("最小投注不能小于" + global.FEE_MIN);
+                return;
+            }
             if (this.optionBidFee > this.customer.deposit) {
                 this.$message("余额不足");
                 return;
@@ -99,16 +105,16 @@ export default {
                 this.$message("超过最大投注额");
                 return;
             }
+            if (this.customerBid.odds <= 1) {
+                this.$message("赔率不能小于等于1");
+                return;
+            }
             let data = {
                 "customer": {"id": cusId},
                 "lotteryRound": {"id": this.lotteryRound.id},
-                "options": [
-                    {
-                        "option": {"id": this.lotteryRoundOption.id},
-                        "odds": this.customerBidOption.odds,
-                        "fee":this.customerBidOption.fee,
-                    }
-                ]
+                "option": {"id": this.lotteryRoundOption.id},
+                "odds": this.customerBid.odds,
+                 "fee":this.customerBid.fee,
             };
             axios
                 .post('http://localhost:8080/api/v1/customers/' + cusId +'/bids', data, {headers: {'Content-Type': 'application/json'}})
