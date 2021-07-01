@@ -46,10 +46,15 @@ export default {
                 .then(
                     response => {
                         sessionStorage.setItem(global.AGENT_ID_KEY, response.data.id);
-                        this.$router.push({path: '/rounds'});
+                        this.$router.push({path: '/lottery-rounds'});
                         }
                 )
                 .catch(function (error) { 
+                    if (error.response.status == 400) {
+                        this.$message.error("登陆信息错误");
+                    } else {
+                        this.$message.error("登陆服务器错误");
+                    }
                     console.log(error);
                 });
         }

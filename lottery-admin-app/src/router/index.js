@@ -22,7 +22,7 @@ const routers = [
       component: LotteriesAdmin
     },
     {
-      path: '/rounds',
+      path: '/lottery-rounds',
       name: 'LotteryRounds',
       component: LotteryRoundsAdmin
     },

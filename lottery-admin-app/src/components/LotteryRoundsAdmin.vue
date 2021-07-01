@@ -33,16 +33,36 @@
                         </el-table-column>   
                         <el-table-column prop="title" label="名字">
                         </el-table-column>
+
                         <el-table-column label="操作">
                             <template slot-scope="scope">
                                 <el-button
                                 size="mini"
                                 @click="openLottoryRoundResultDiag(scope.row)">设置结果</el-button>
+
                             </template>
                         </el-table-column>
                     </el-table>
                 </el-tab-pane>
-                <el-tab-pane label="已开奖实例" name="published">已开奖实例</el-tab-pane>
+                <el-tab-pane label="待结算实例" name="settled">
+                    <el-table :data="lottoryRounds" style="width: 100%">
+                        <el-table-column prop="id" label="ID">
+                        </el-table-column>   
+                        <el-table-column prop="title" label="名字">
+                        </el-table-column>
+
+                        <el-table-column label="操作">
+                            <template slot-scope="scope">
+                                <el-button
+                                size="mini"
+                                @click="openLottoryRoundResultDiag(scope.row)">重设结果</el-button>
+                                <el-button
+                                size="mini"
+                                @click="openSettleDialog(scope.row)">开始结算</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-tab-pane>
             </el-tabs>
             <div>
                 
@@ -173,7 +193,7 @@
             </div>
             <div style="text-align: center;" class="dialog-footer">
                 <el-button @click="newLottoryRoundOptionDialogVisible = false" size="mini">取 消</el-button>
-                <el-button @click="addLotteryRoundOption()" size="mini">修 改</el-button>
+                <el-button @click="addLotteryRoundOption()" size="mini">增 加</el-button>
             </div>
         </el-dialog>
         <el-dialog
@@ -281,6 +301,32 @@
                 <el-button @click="addLotteryRoundResult()" size="mini">确 定</el-button>
             </div>
         </el-dialog>
+
+        <el-dialog
+            title="结算窗口"
+            :visible.sync="lotteryRoundSettleDialogVisible"
+            width="550px">
+            
+            <div>
+                <span>彩票： </span><span> {{ lotteryRound.lottery.name }}</span>
+            </div>
+            <div>
+                <span>实例： </span><span> {{ lotteryRound.title }}</span>
+            </div>
+            <div>
+                <span>截至： </span><span> {{ lotteryRound.cutOffTime }}</span>
+            </div>
+            <div>
+                <span>结果： </span>
+                <span v-for="(option,i) in lottoryRoundOptionsWin" :key="i"> 
+                    {{option.option.item.name}} {{option.optionText}} <br/>
+                </span>
+            </div>
+            <div style="text-align: center;margin-top:10px;" class="dialog-footer">
+                <el-button @click="lotteryRoundSettleDialogVisible = false" size="mini">取 消</el-button>
+                <el-button @click="startSettle(lotteryRound.id)" size="mini">确 定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -289,6 +335,7 @@ import axios from 'axios'
 export default {
     data () {
         return {
+            activeName:"ongoing",
             lotteries: [],
             lottoryRounds: [],
             lotteryRound:{
@@ -296,6 +343,7 @@ export default {
                     id:"",
                 }
             },
+            lotteryRoundResults:[],
             lotteryRoundOptions:[],
             lotteryRoundOption:{},
             lotteryItemOptions:[],
@@ -303,12 +351,14 @@ export default {
             lotteryRoundTags:[],
             lotteryRoundTagIdsSelect:[],
             lottoryRoundOptionIds:[],
+            lottoryRoundOptionsWin:[],
             odds:0,
             lottoryRoundDialogVisible: false,
             newLottoryRoundDialogVisible:false,
             lottoryRoundOptionDialogVisible:false,
             newLottoryRoundOptionDialogVisible:false,
             lottoryRoundResultsDialogVisible:false,
+            lotteryRoundSettleDialogVisible:false,
             lotteryRoundOptionsInLotteryItemId: new Map(),
             lotteryItems: [],
             pickerOptions: {
@@ -342,7 +392,8 @@ export default {
                 .then(response => {
                         this.lottoryRounds = response.data.content;
                     })
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("读取彩票实例失败");
                     console.log(error);
                 });
         },
@@ -358,7 +409,8 @@ export default {
                         this.lottoryRoundOptionDialogVisible = false;
                     }
                 )
-                .catch(function (error) { 
+                .catch(error => { 
+                    this.$message.error("修改彩票赔率失败");
                     console.log(error);
                 });
         },
@@ -377,7 +429,8 @@ export default {
                         this.lotteryRoundOptions.push(response.data);
                     }
                 )
-                .catch(function (error) { 
+                .catch(error => { 
+                    this.$message.error("增加彩票赔率失败");
                     console.log(error);
                 });
         },
@@ -392,7 +445,8 @@ export default {
                         this.newLottoryRoundDialogVisible = false;
                     }
                 )
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("增加彩票实例失败");
                     console.log(error);
                 });
         },
@@ -413,7 +467,8 @@ export default {
                         this.lottoryRoundResultsDialogVisible = false;
                     }
                 )
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("增加彩票结果失败");
                     console.log(error);
                 });
         },
@@ -429,7 +484,8 @@ export default {
                     this.lotteryRoundTags = response.data.content;
                     this.$message("修改彩票实例标签成功");
                 })
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("修改彩票实例标签失败");
                     console.log(error);
                 });
         },
@@ -442,7 +498,8 @@ export default {
                         this.lottoryRoundDialogVisible = false;
                     }
                 )
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("修改彩票实例失败");
                     console.log(error);
                 });
         },
@@ -453,7 +510,8 @@ export default {
                 .then(response => {
                         this.lotteries = response.data.content;
                     })
-                .catch(function (error) { 
+                .catch(error => { 
+                    this.$message.error("查询彩票失败");
                     console.log(error);
             });
             axios
@@ -461,7 +519,8 @@ export default {
                 .then(response => {
                         this.lotteryRoundTags = response.data.content;
                     })
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("查询标签失败");
                     console.log(error);
             });
         },
@@ -471,6 +530,7 @@ export default {
                 .get('http://localhost:8080/api/v1/lotteries/' + this.lotteryRound.lottery.id + '/options')
                 .then(response => {
                     let lotteryItemOptions = response.data;
+                    let selections = []
                     axios
                         .get('http://localhost:8080/api/v1/lotteries/rounds/' + this.lotteryRound.id + '/options')
                         .then(
@@ -487,13 +547,14 @@ export default {
                                         }
                                     }
                                     if(!found) {
-                                            this.lotteryItemOptions.push(lotteryItemOption)
+                                            selections.push(lotteryItemOption)
                                         }
                                 }
-                                //console.log("########" +  this.lotteryItemOptions.length);
+                                this.lotteryItemOptions = selections
                             })
                 })
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("查询彩票选项失败");
                     console.log(error);
             });
         },
@@ -505,7 +566,8 @@ export default {
                 .then(response => {
                         this.lotteryRoundTags = response.data.content;
                     })
-                .catch(function (error) { 
+                .catch(error => { 
+                    this.$message.error("查询标签失败");
                     console.log(error);
             });
             axios
@@ -517,6 +579,7 @@ export default {
                         }
                     })
                 .catch(function (error) { 
+                    this.$message.error("查询实例标签失败");
                     console.log(error);
             });
             axios
@@ -525,7 +588,8 @@ export default {
                         this.lotteryRoundOptions = response.data;
      
                     })
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("查询实例选项失败");
                     console.log(error);
             });
             axios
@@ -533,7 +597,8 @@ export default {
                 .then(response => {
                         this.lotteryRound = response.data;
                     })
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    this.$message.error("查询实例失败");
                     console.log(error);
             });
         },
@@ -544,26 +609,73 @@ export default {
         openLottoryRoundResultDiag: function (row) {
             this.lottoryRoundResultsDialogVisible = true;
             this.lotteryRound = row;
-
+            let lottoryRoundOptionIds = []
+            axios
+                .get('http://localhost:8080/api/v1/lotteries/' + row.lottery.id +'/rounds/' +  row.id +'/results')
+                .then(response => {
+                        let results = response.data;
+                        for (let i=0; i < results.length; i ++) {
+                            let result= results[i];
+                            lottoryRoundOptionIds.push(result.id);
+                        }
+                        this.lottoryRoundOptionIds = lottoryRoundOptionIds;
+                    })
+                .catch(error =>  {
+                    this.$message.error("获取结果失败");
+                    console.log(error);
+            });
             axios
                 .get('http://localhost:8080/api/v1/lotteries/rounds/' + row.id + '/options')
                 .then(response => {
                         this.lotteryRoundOptions = response.data;
+                        let lotteryRoundOptionsInLotteryItemId = new Map();
+                        let lotteryItems = [];
                         for (let i=0; i < this.lotteryRoundOptions.length; i ++) {
                             let lotteryRoundOption = this.lotteryRoundOptions[i];
                             let lotteryItemOption = lotteryRoundOption.option;
                             let lotteryItem = lotteryItemOption.item;
-                            if (this.lotteryRoundOptionsInLotteryItemId.has(lotteryItem.id)) {
-                                let lotteryRoundOptions = this.lotteryRoundOptionsInLotteryItemId.get(lotteryItem.id)
+                            if (lotteryRoundOptionsInLotteryItemId.has(lotteryItem.id)) {
+                                let lotteryRoundOptions = lotteryRoundOptionsInLotteryItemId.get(lotteryItem.id)
                                 lotteryRoundOptions.push(lotteryRoundOption);
-                                this.lotteryRoundOptionsInLotteryItemId.set(lotteryItem.id, lotteryRoundOptions);
+                                lotteryRoundOptionsInLotteryItemId.set(lotteryItem.id, lotteryRoundOptions);
                             } else {
-                                this.lotteryItems.push(lotteryItem);
-                                this.lotteryRoundOptionsInLotteryItemId.set(lotteryItem.id, [lotteryRoundOption]);
+                                lotteryItems.push(lotteryItem);
+                                lotteryRoundOptionsInLotteryItemId.set(lotteryItem.id, [lotteryRoundOption]);
                             }
                         }
+                        this.lotteryItems = lotteryItems;
+                        this.lotteryRoundOptionsInLotteryItemId = lotteryRoundOptionsInLotteryItemId;
                     })
-                .catch(function (error) { 
+                .catch(error => { 
+                    this.$message.error("查询实例选项失败");
+                    console.log(error);
+            });
+        },
+        openSettleDialog: function (row) {
+            this.lotteryRound = row
+            this.lotteryRoundSettleDialogVisible = true;
+            axios
+                .get('http://localhost:8080/api/v1/lotteries/rounds/' +  row.id +'/options?scope=win')
+                .then(response => {
+                        this.lottoryRoundOptionsWin = response.data;
+
+                    })
+                .catch(error =>  {
+                    this.$message.error("获取中奖选项失败");
+                    console.log(error);
+            });
+        },
+        startSettle: function (id) {
+            let data = {
+                id: id,
+            }
+            axios
+                .post('http://localhost:8080/api/v1/admins/123/actions/settle-round', data)
+                .then(() => {
+                        this.$message("开始结算");
+                    })
+                .catch(error =>  { 
+                    this.$message.error("开始结算失败");
                     console.log(error);
             });
         }
@@ -574,7 +686,7 @@ export default {
             .then(response => {
                     this.lottoryRounds = response.data.content;
                 })
-            .catch(function (error) { 
+            .catch(error => { 
                 console.log(error);
             });
         axios
@@ -582,7 +694,7 @@ export default {
             .then(response => {
                     this.lotteryRoundTags = response.data.content;
                 })
-            .catch(function (error) { 
+            .catch(error => { 
                 console.log(error);
             });
     }
