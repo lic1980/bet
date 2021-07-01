@@ -10,28 +10,37 @@
                         <el-table :data="bids" style="width: 100%">
                             <el-table-column prop="id" label="编号">
                             </el-table-column>
+                            <el-table-column prop="option.round.title" label="名字">
+                            </el-table-column>
                             <el-table-column  label="投注项">
                                 <template slot-scope="scope">  
-                                    <li v-for="(option, index) in scope.row.options" v-bind:key="index">
-                                        目标：{{ option.option.optionText }}<br/>
-                                        费用：{{ option.fee }}<br/>
-                                        投注赔率：{{ option.odds }}
-                                        实时赔率：{{ option.option.odds }}
-                                    </li>  
+                                    目标：{{ scope.row.option.optionText }}<br/>
+                                    费用：{{ scope.row.fee }}<br/>
+                                    投注赔率：{{ scope.row.odds }}
+                                    实时赔率：{{ scope.row.option.odds }} 
                                 </template>
                             </el-table-column>
-                            <el-table-column label="动作">
-                                <template slot-scope="scope">  
-                                    <el-button
-                                    size="mini"
-                                    @click="acceptBid(scope.row)">接受</el-button>
-                                    <br/><br/>
-                                    <el-button
-                                    size="mini"
-                                    @click="refuseBid(scope.row)">拒绝</el-button>
+                            <el-table-column prop="initiator.tel" label="投注人">
+                            </el-table-column>
+                            <el-table-column prop="recipient.tel" label="收注人">
+                            </el-table-column>
+                            <el-table-column label="状态">
+                                <template slot-scope="scope">
+             
+                                    <span v-if="scope.row.status == 'NEW'">初始</span>
+                                    <span v-if="scope.row.status == 'ACCEPTED'">接收</span>
+                                    <span v-if="scope.row.status == 'CANCEL'">撤销</span>
+                                    <span v-if="scope.row.status == 'SETTLED'">开奖</span>
+                                    <span v-if="scope.row.status == 'REJECTED'">拒绝</span>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="customer.tel" label="投注人">
+                            <el-table-column label="状态">
+                                <template slot-scope="scope">
+                                    <span v-if="scope.row.result == null">未知</span>
+                                    <span v-if="scope.row.result == 'PENDING'">未知</span>
+                                    <span v-if="scope.row.result == 'WIN'">赢</span>
+                                    <span v-if="scope.row.result == 'LOSE'">输</span>
+                                </template>
                             </el-table-column>
                             <el-table-column prop="createTime" label="投注时间">
                             </el-table-column>
