@@ -68,6 +68,9 @@ public class LoginController {
 			throw new InvalidParameter();
 		}
 		SiteAdmin result =  adminService.validatePassword(siteAdmin.getTel(), siteAdmin.getPlainPassword()).orElseThrow(InvalidParameter::new);
+		if(result == null) {
+			throw new InvalidParameter();
+		}
 		session.setAttribute(Const.ADMIN_ID_KEY_IN_SESSION, result.getId());
 		return result;
 	}

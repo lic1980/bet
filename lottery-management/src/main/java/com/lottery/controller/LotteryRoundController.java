@@ -1,5 +1,7 @@
 package com.lottery.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lottery.exception.InvalidParameter;
+import com.lottery.model.LotteryItemOption;
 import com.lottery.model.LotteryRound;
 import com.lottery.service.LotteryRoundService;
 
@@ -37,4 +41,12 @@ public class LotteryRoundController {
 	public LotteryRound getLotteryRound(@PathVariable Long rid) {
 		return lotteryRoundService.findById(rid).orElse(new LotteryRound());
 	}
+	
+
+	@GetMapping(value = "/lotteries/{lid}/rounds/{rid}/results")
+	public List<LotteryItemOption> getLotteryRoundResultsById(@PathVariable Long rid) throws InvalidParameter {
+		LotteryRound round = lotteryRoundService.findById(rid).orElseThrow(InvalidParameter::new);
+		return round.getResults();
+	}
+
 }

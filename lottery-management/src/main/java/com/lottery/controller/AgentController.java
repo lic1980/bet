@@ -79,24 +79,26 @@ public class AgentController {
 		return customerService.findByAgent(agentId, page - 1, size);
 	}
 
-	@PostMapping(value = "/agents/{id}/customers/{customerId}/deposits")
+	@PostMapping(value = "/agents/{id}/customers/{customerId}/exchanges")
 	public CustomerDepositExchange changeCustomerBid(@PathVariable(value = "customerId") String customerId,
-			@RequestBody CustomerDepositExchange deposit) throws InvalidParameter {
+			@RequestBody CustomerDepositExchange exchange) throws InvalidParameter {
 
-		if (deposit.getAmount() < DEPOSIT_MIN || deposit.getAmount() > DEPOSIT_MAX) {
+		if (exchange.getAmount() < DEPOSIT_MIN || exchange.getAmount() > DEPOSIT_MAX) {
 			throw new InvalidParameter();
 		}
 
-		if (deposit.getReference() == null || deposit.getCustomer() == null) {
+		if (exchange.getReference() == null || exchange.getCustomer() == null) {
 			throw new InvalidParameter();
 		}
 
-		Agent agent = agentService.findById(deposit.getReference()).orElseThrow(InvalidParameter::new);
-		Customer customer = customerService.findById(deposit.getCustomer().getId()).orElseThrow(InvalidParameter::new);
+		Agent agent = agentService.findById(exchange.getReference()).orElseThrow(InvalidParameter::new);
+		Customer customer = customerService.findById(exchange.getCustomer().getId()).orElseThrow(InvalidParameter::new);
 		if (!customer.getAgent().getId().equals(agent.getId())) {
 			throw new InvalidParameter();
 		}
-
-		return customerDepositRecordService.changeCustomerDepositRecord(deposit);
+		if (customer.getDeposit() - exchange.getAmount() < 0) {
+			throw new InvalidParameter();
+		}
+		return customerDepositRecordService.changeCustomerDepositRecord(exchange);
 	}
 }

@@ -14,7 +14,8 @@ import com.lottery.model.LotteryRoundTag;
 public interface LotteryRoundRepository extends JpaRepository<LotteryRound, Long>{
 	Page<LotteryRound> findByLotteryAndCutOffTimeGreaterThan(Lottery lottery, Date date, Pageable pageable);
 	Page<LotteryRound> findByCutOffTimeGreaterThan(Date date, Pageable pageable);
-	Page<LotteryRound> findByCutOffTimeLessThan(Date date, Pageable pageable);
+	Page<LotteryRound> findByCutOffTimeLessThanAndResultsNull(Date date, Pageable pageable);
 	Page<LotteryRound> findByLottery(Lottery lottery, Pageable pageable);
 	Page<LotteryRound> findByTagsIn(List<LotteryRoundTag> tags, Pageable pageable);
+	Page<LotteryRound> findByResultsNotNull(Pageable pageable);
 }

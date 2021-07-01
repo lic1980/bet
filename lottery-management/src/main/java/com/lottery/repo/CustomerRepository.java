@@ -18,6 +18,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>{
 	Optional<Customer> findByIdAndPassword(Long id, String encryptPassword);
 
 	@Modifying
-	@Query("UPDATE Customer c SET c.deposit=c.deposit+?2 where c.id=?1")
-	int updateCustomerDepositById(Long id, Float num);
+	@Query("UPDATE Customer c SET c.deposit=c.deposit+?2 WHERE c.id=?1 AND c.deposit+?2>=0")
+	int updateCustomerDepositById(Long id, Float amount);
 }

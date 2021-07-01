@@ -154,10 +154,12 @@ public class SiteAdminController {
 	@PostMapping(value = "/admins/{aid}/lotteries/{lid}/rounds/{rid}/results")
 	public List<LotteryItemOption> postLotteryRoundResultByLottery(@PathVariable Long rid, @RequestBody List<LotteryItemOption> results) throws InvalidParameter {
 		LotteryRound round = lotteryRoundService.findById(rid).orElseThrow(InvalidParameter::new);
-		round.getResults().addAll(results);
+		round.setResults(results);
 		round = lotteryRoundService.saveOrUpdate(round);
 		return round.getResults();
 	}
+	
+
 	
 	@PostMapping(value = "/admins/{aid}/lotteries/rounds")
 	public LotteryRound postLotteryRound(@RequestBody LotteryRound round) {
@@ -206,5 +208,10 @@ public class SiteAdminController {
 	@DeleteMapping(value = "/admins/{aid}/lotteries/rounds/tags/{tid}")
 	public void deleteTag(@PathVariable Long tid) {
 		lotteryRoundTagService.delete(tid);
+	}
+	
+	@PostMapping(value = "/admins/{aid}/actions/settle-round")
+	public void settleRound(@RequestBody LotteryRound round) {
+		lotteryRoundService.settleRound(round.getId());
 	}
 }

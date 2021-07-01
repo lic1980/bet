@@ -13,11 +13,13 @@ import com.lottery.model.Agent;
 import com.lottery.model.Customer;
 import com.lottery.model.CustomerBid;
 import com.lottery.model.CustomerBidStatus;
+import com.lottery.model.LotteryRound;
 
 public interface CustomerBidRepository extends JpaRepository<CustomerBid, Long>{
 	Page<CustomerBid> findByInitiatorNotAndRecipientIsNull(Customer cus, Pageable pageable);
 	Page<CustomerBid> findByInitiator(Customer cus, Pageable pageable);
 	Page<CustomerBid> findByRecipient(Customer cus, Pageable pageable);
+	Page<CustomerBid> findByOptionRound(LotteryRound round, Pageable pageable);
 	Page<CustomerBid> findByInitiatorAgentAndStatusIn(Agent agent, List<CustomerBidStatus> statuses, Pageable pageable);
 	
 	@Modifying

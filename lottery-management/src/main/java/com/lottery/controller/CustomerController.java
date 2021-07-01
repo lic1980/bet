@@ -1,9 +1,5 @@
 package com.lottery.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.lottery.exception.InvalidParameter;
 import com.lottery.model.Customer;
 import com.lottery.model.CustomerBid;
-import com.lottery.model.CustomerBidOption;
 import com.lottery.model.CustomerBidStatus;
-import com.lottery.model.LotteryRound;
 import com.lottery.model.LotteryRoundOption;
-import com.lottery.service.CustomerBidOptionService;
 import com.lottery.service.CustomerBidService;
 import com.lottery.service.CustomerService;
-import com.lottery.service.LotteryRoundService;
+import com.lottery.service.LotteryRoundOptionService;
 
 @RestController
 @RequestMapping(value = "/api/v1")
@@ -35,25 +28,11 @@ public class CustomerController {
 	@Autowired
 	private CustomerBidService customerBidService;
 	@Autowired
-	private CustomerBidOptionService customerBidOptionService;
-	@Autowired
-	private LotteryRoundService lotteryRoundService;
+	private LotteryRoundOptionService lotteryRoundOptionService;
 
 	@GetMapping(value = "/customers/{id}")
 	public Customer getCustomer(@PathVariable Long id) {
 		return customerService.findById(id).orElse(new Customer());
-	}
-	
-	@GetMapping(value = "/customers/{id}/bids/options")
-	public List<CustomerBidOption> getCustomerBidOptions(@RequestParam List<Long> bidIds) {
-		List<CustomerBid>  bids = new ArrayList<>();
-				
-		for(Long id: bidIds) {
-			CustomerBid bid = new CustomerBid();
-			bid.setId(id);
-			bids.add(bid);
-		}
-		return customerBidOptionService.findByBids(bids);
 	}
 
 	@GetMapping(value = "/customers/{id}/bids")
@@ -71,14 +50,7 @@ public class CustomerController {
 	public CustomerBid getCustomerBids(@PathVariable Long cid, @PathVariable Long bid) throws InvalidParameter {
 		return customerBidService.findById(bid).orElseThrow(InvalidParameter::new);
 	}
-	
-	@GetMapping(value = "/customers/{cid}/bids/{bid}/options")
-	public List<CustomerBidOption> getCustomerBidOptions(@PathVariable Long cid, @PathVariable Long bid) throws InvalidParameter {
-		CustomerBid customerBid = new CustomerBid();
-		customerBid.setId(bid);
-		return customerBidOptionService.findByBid(customerBid);
-	}
-	
+
 	@PatchMapping(value = "/customers/{cid}/bids/{bid}")
 	public CustomerBid cancelOrAcceptBid(@PathVariable Long cid, @PathVariable Long bid, @RequestBody CustomerBid requestBid) throws InvalidParameter {
 		
@@ -96,39 +68,19 @@ public class CustomerController {
 	@PostMapping(value = "/customers/{id}/bids")
 	public CustomerBid addCustomerBid(@PathVariable(value = "id") Long customerId, @RequestBody CustomerBid bid)
 			throws InvalidParameter {
-		if (bid.getLotteryRound() == null) {
-			throw new InvalidParameter();
-		}
-		if (bid.getOptions() == null || bid.getOptions().isEmpty()) {
+		if (bid.getFee() == null || bid.getFee() <=1 || bid.getOption() == null || bid.getOption().getId() == null || bid.getOdds() == null) {
 			throw new InvalidParameter();
 		}
 
-		LotteryRound lotteryRound = lotteryRoundService.findById(bid.getLotteryRound().getId())
+		LotteryRoundOption lotteryRoundOption = lotteryRoundOptionService.findById(bid.getOption().getId())
 				.orElseThrow(InvalidParameter::new);
-		List<LotteryRoundOption> options = lotteryRound.getOptions();
-
-		float totalFee = 0;
-		for (CustomerBidOption optionPassed : bid.getOptions()) {
-			totalFee = totalFee + optionPassed.getFee();
-			LotteryRoundOption option = findOption(options, optionPassed.getOption().getId()).orElseThrow(InvalidParameter::new);
-
-			optionPassed.setOption(option);
-		}
-
+		bid.setOption(lotteryRoundOption);
 		Customer customer = customerService.findById(customerId).orElseThrow(InvalidParameter::new);
-		if (customer.getDeposit() - totalFee < 0) {
+		if (customer.getDeposit() - bid.getFee() < 0) {
 			throw new InvalidParameter();
 		}
 		bid.setInitiator(customer);
 		return customerBidService.createCustomerBid(bid);
 	}
 
-	private Optional<LotteryRoundOption> findOption(List<LotteryRoundOption> options, Long optionId) {
-		for (LotteryRoundOption option : options) {
-			if (option.getId().equals(optionId)) {
-				return Optional.of(option);
-			}
-		}
-		return Optional.empty();
-	}
 }

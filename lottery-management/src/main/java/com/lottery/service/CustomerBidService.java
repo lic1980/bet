@@ -15,11 +15,13 @@ import com.lottery.exception.InvalidParameter;
 import com.lottery.model.Agent;
 import com.lottery.model.Customer;
 import com.lottery.model.CustomerBid;
-import com.lottery.model.CustomerBidOption;
+import com.lottery.model.CustomerBidResult;
 import com.lottery.model.CustomerBidStatus;
 import com.lottery.model.CustomerDepositExchange;
 import com.lottery.model.CustomerDepositExchangeType;
 import com.lottery.model.LotteryItemOption;
+import com.lottery.model.LotteryRound;
+import com.lottery.model.LotteryRoundOption;
 import com.lottery.repo.CustomerBidRepository;
 import com.lottery.util.IdUtils;
 
@@ -27,8 +29,6 @@ import com.lottery.util.IdUtils;
 public class CustomerBidService {
 	@Autowired
 	private CustomerBidRepository repo;
-	@Autowired
-	private CustomerBidOptionService customerBidOptionService;
 	@Autowired
 	private CustomerDepositRecordService customerDepositRecordService;
 	
@@ -44,11 +44,7 @@ public class CustomerBidService {
 		}
 		CustomerBid customerBid = repo.findById(bid).orElseThrow(InvalidParameter::new);
 		CustomerDepositExchange exchange = new CustomerDepositExchange();
-		float fee = 0;
-		for (CustomerBidOption option : customerBid.getOptions()) {
-			fee = fee + option.getFee();
-		}
-		exchange.setAmount(fee);
+		exchange.setAmount(customerBid.getFee());
 		exchange.setCustomer(customerBid.getInitiator());
 		exchange.setType(CustomerDepositExchangeType.WITHDRAW);
 		exchange.setReference(customerBid.getId());
@@ -65,11 +61,7 @@ public class CustomerBidService {
 		}
 		CustomerBid customerBid = repo.findById(bid).orElseThrow(InvalidParameter::new);
 		CustomerDepositExchange exchange = new CustomerDepositExchange();
-		float fee = 0;
-		for (CustomerBidOption option : customerBid.getOptions()) {
-			fee = fee + option.getFee() * option.getOdds();
-		}
-		exchange.setAmount(0 - fee);
+		exchange.setAmount(0 - customerBid.getFee());
 		exchange.setCustomer(customerBid.getRecipient());
 		exchange.setType(CustomerDepositExchangeType.ACCEPT);
 		exchange.setReference(customerBid.getId());
@@ -85,15 +77,10 @@ public class CustomerBidService {
 		bid.setCreateTime(new Date());
 		
 		CustomerDepositExchange exchange = new CustomerDepositExchange();
-		float fee = 0;
-		for (CustomerBidOption option : bid.getOptions()) {
-			option.setCustomerBid(bid);
-			option.setId(IdUtils.generateId());
-			fee = fee + option.getFee() * option.getOdds();
-		}
+
 		CustomerBid result = repo.save(bid);
 		
-		exchange.setAmount(0 - fee);
+		exchange.setAmount(0 - bid.getFee());
 		exchange.setCustomer(bid.getInitiator());
 		exchange.setType(CustomerDepositExchangeType.BID);
 		exchange.setReference(bid.getId());
@@ -105,17 +92,16 @@ public class CustomerBidService {
 	@Transactional(rollbackOn = {Exception.class})
 	public CustomerBid settleCustomerBid(CustomerBid bid) throws InvalidParameter {
 
-		bid.setStatus(CustomerBidStatus.SETTLED);
-		bid = repo.save(bid);
 		float awardInitiator = 0;
 		float awardRecipent = 0;
+		float serviceCharge = 0 ;
 		List<LotteryItemOption> results = getResult(bid);
-		for (CustomerBidOption option : bid.getOptions()) {
-			if(isWin(option, results)) {
-				awardInitiator = awardInitiator + option.getFee() * option.getOdds();
-			} else {
-				awardRecipent = awardRecipent + option.getFee() + option.getFee() * option.getOdds();
-			}
+		if(isWin(bid.getOption(), results)) {
+			awardInitiator = bid.getFee() * bid.getOdds();
+			bid.setResult(CustomerBidResult.WIN);
+		} else {
+			awardRecipent = bid.getFee() + bid.getFee() * bid.getOdds();
+			bid.setResult(CustomerBidResult.LOSE);
 		}
 		if(awardInitiator > 0) {
 			CustomerDepositExchange exchangeInitiator = new CustomerDepositExchange();
@@ -134,17 +120,20 @@ public class CustomerBidService {
 			exchangeRecipent.setReference(bid.getId());
 			customerDepositRecordService.changeCustomerDepositRecord(exchangeRecipent);
 		}
+		bid.setStatus(CustomerBidStatus.SETTLED);
+		bid.setServiceCharge(serviceCharge);
+		bid = repo.save(bid);
 		return bid;
 	}
 	
 	private List<LotteryItemOption> getResult(CustomerBid bid) {
-		return bid.getLotteryRound().getResults();
+		return bid.getOption().getRound().getResults();
 	}
 	
-	private boolean isWin(CustomerBidOption bidOption, List<LotteryItemOption> results) {
-		Long bidOptionId = bidOption.getOption().getOption().getId();
+	private boolean isWin(LotteryRoundOption option, List<LotteryItemOption> results) {
+		Long bidOptionId = option.getOption().getId();
 		for (LotteryItemOption result : results) {
-			if (bidOptionId == result.getId()) {
+			if (bidOptionId.equals(result.getId())) {
 				return true;
 			}
 		}
@@ -177,5 +166,12 @@ public class CustomerBidService {
 		Agent agent = new Agent();
 		agent.setId(agentId);
 		return repo.findByInitiatorAgentAndStatusIn(agent, statuses, page);
+	}
+	
+	public Page<CustomerBid> findByLotteryRound(Long roundId, int pageNum, int pageSize){
+		PageRequest page = PageRequest.of(pageNum, pageSize);
+		LotteryRound round = new LotteryRound();
+		round.setId(roundId);
+		return repo.findByOptionRound(round, page);
 	}
 }
