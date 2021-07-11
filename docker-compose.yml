@@ -22,7 +22,7 @@ services:
           db:
             condition: service_healthy
         ports:
-          - "8080:8080"
+          - "18080:8080"
         environment:
           DB_HOST: db:3306
     lottery-admin-app:
@@ -31,7 +31,24 @@ services:
         depends_on:
           - lottery-management
         ports:
-          - "18080:8080"
+          - "28080:80"
         environment:
-          BACKEND_HOST: 139.180.190.100:8080
-        
+          BACKEND_HOST: 139.180.190.100:18080
+    lottery-agent-app:
+        image: chengkerossli/lottery-agent-app:latest
+        hostname: lottery-agent-app
+        depends_on:
+          - lottery-management
+        ports:
+          - "38080:80"
+        environment:
+          BACKEND_HOST: 139.180.190.100:18080
+    lottery-customer-app:
+        image: chengkerossli/lottery-customer-app:latest
+        hostname: lottery-customer-app
+        depends_on:
+          - lottery-management
+        ports:
+          - "8080:80"
+        environment:
+          BACKEND_HOST: 139.180.190.100:18080       
