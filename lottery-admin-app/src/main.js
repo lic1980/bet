@@ -15,7 +15,7 @@ Vue.use(VueRouter)
 axios.defaults.withCredentials = true
 // set backend address from env
 const BASE_URL = document.querySelector('body').getAttribute('backend-host')
-Vue.prototype.BASE_URL = BASE_URL ==null? "localhost:8080":BASE_URL
+Vue.prototype.BASE_URL = (BASE_URL ==null? "localhost:8080":BASE_URL)
 
 const router = new VueRouter({
   mode: 'history',
