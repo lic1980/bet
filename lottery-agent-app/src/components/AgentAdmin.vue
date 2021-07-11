@@ -47,7 +47,7 @@ export default {
     data () {
         return {
             agent: {},
-            passwordDialogVisible=false
+            passwordDialogVisible:false
         }
     },
     methods: {
@@ -60,7 +60,7 @@ export default {
                 return
             }
             axios
-                .patch('http://localhost:8080/api/v1/security-resources/agents', this.agent)
+                .patch('http://' + this.BASE_URL + '/api/v1/security-resources/agents', this.agent)
                 .then(
                     response => {
                         this.agent = response.data
@@ -90,7 +90,7 @@ export default {
                 "amount": this.amount
             };
             axios
-                .post('http://localhost:8080/api/v1/agents/'+this.agent.id+'/customers/' +this.customer.id+ '/deposits', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/agents/'+this.agent.id+'/customers/' +this.customer.id+ '/deposits', data, {headers: {'Content-Type': 'application/json'}})
                 .then(response => {
                     let deposit = response.data;
                     for (let cus of this.customers) {
@@ -111,7 +111,7 @@ export default {
     mounted () {
         let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
         axios
-            .get('http://localhost:8080/api/v1/agents/' + agentId)
+            .get('http://' + this.BASE_URL + '/api/v1/agents/' + agentId)
             .then(response => (this.agent = response.data))
             .catch(function (error) { 
                 console.log(error);

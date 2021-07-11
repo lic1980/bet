@@ -58,7 +58,7 @@ export default {
                 text: this.tagText,
             };
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/rounds/tags', tag, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/rounds/tags', tag, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("增加标签成功");
@@ -72,7 +72,7 @@ export default {
         },
         deleteTag : function(row) {
             axios
-                .delete('http://localhost:8080/api/v1/admins/123/lotteries/rounds/tags/' + row.id,  {headers: {'Content-Type': 'application/json'}})
+                .delete('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/rounds/tags/' + row.id,  {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("删除标签成功");
@@ -93,7 +93,7 @@ export default {
     },
     mounted () {
         axios
-            .get('http://localhost:8080/api/v1/lotteries/rounds/tags?page=1&size=20')
+            .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/tags?page=1&size=20')
             .then(response => {
                     this.tags = response.data.content;
                 })

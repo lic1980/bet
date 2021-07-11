@@ -84,6 +84,9 @@ public class LotteryRoundService {
 				if (bid.getStatus() == CustomerBidStatus.ACCEPTED) {
 					customerBidService.settleCustomerBid(bid);
 				}
+				if (bid.getStatus() == CustomerBidStatus.NEW) {
+					customerBidService.cancelBid(bid.getId());
+				}
 			} catch (InvalidParameter e) {
 				LOGGER.error("failed to settle bid", bid, e);
 			}

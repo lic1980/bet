@@ -47,21 +47,21 @@ export default {
         let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
         let lotteryId = this.$route.query.lotteryId;
         axios
-            .get('http://localhost:8080/api/v1/customers/' + cusId)
+            .get('http://' + this.BASE_URL + '/api/v1/customers/' + cusId)
             .then(response => (this.customer = response.data))
             .catch(function (error) { 
                 console.log(error);
             });
         if (lotteryId != null){
             axios
-                .get('http://localhost:8080/api/v1/lotteries/' + lotteryId + '/rounds')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + lotteryId + '/rounds')
                 .then(
                     response => {
                         this.lotteryRounds = response.data.content
                         for (let i=0; i < this.lotteryRounds.length; i++) {
                             let lotteryRound = this.lotteryRounds[i]
                             axios
-                                .get('http://localhost:8080/api/v1/lotteries/rounds/' + lotteryRound.id + '/options')
+                                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + lotteryRound.id + '/options')
                                 .then(response => {
                                     let tmp = new Map();
                                     tmp.set(lotteryRound.id, response.data)
@@ -77,20 +77,20 @@ export default {
                     console.log(error);
                 });
             axios
-                .get('http://localhost:8080/api/v1/lotteries/' + lotteryId )
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + lotteryId )
                 .then(response => {this.lottery = response.data})
                 .catch(function (error) { 
                     console.log(error);
             });
         } else {
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds')
                 .then(response => {
                     this.lotteryRounds = response.data.content
                         for (let i=0; i < this.lotteryRounds.length; i++) {
                             let lotteryRound = this.lotteryRounds[i]
                             axios
-                                .get('http://localhost:8080/api/v1/lotteries/rounds/' + lotteryRound.id + '/options')
+                                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + lotteryRound.id + '/options')
                                 .then(response => {
                                     let tmp = new Map();
                                     tmp.set(lotteryRound.id, response.data)

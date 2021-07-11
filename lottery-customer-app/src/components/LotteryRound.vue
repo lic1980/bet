@@ -117,7 +117,7 @@ export default {
                  "fee":this.customerBid.fee,
             };
             axios
-                .post('http://localhost:8080/api/v1/customers/' + cusId +'/bids', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/customers/' + cusId +'/bids', data, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("投注成功");
@@ -135,18 +135,18 @@ export default {
         let lotteryRoundId = this.$route.query.lotteryRoundId;
         
         axios
-            .get('http://localhost:8080/api/v1/customers/' + cusId)
+            .get('http://' + this.BASE_URL + '/api/v1/customers/' + cusId)
             .then(response => (this.customer = response.data))
             .catch(function (error) { 
                 console.log(error);
             });
         axios
-            .get('http://localhost:8080/api/v1/lotteries/rounds/' + lotteryRoundId)
+            .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + lotteryRoundId)
             .then(response => {
                 this.lotteryRound = response.data
 
                 axios
-                    .get('http://localhost:8080/api/v1/lotteries/' + this.lotteryRound.lottery.id + '/options')
+                    .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + this.lotteryRound.lottery.id + '/options')
                     .then(response => {
                             let options = response.data;
                             let optionsByitem = [];
@@ -178,7 +178,7 @@ export default {
                 console.log(error);
             });
         axios
-            .get('http://localhost:8080/api/v1/lotteries/rounds/' + lotteryRoundId + "/options")
+            .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + lotteryRoundId + "/options")
             .then(response => {
                 let options = response.data
                 let roundOptionByOptionId = new Map()

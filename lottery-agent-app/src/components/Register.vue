@@ -50,7 +50,7 @@ export default {
                 "weixin": this.agentForm.weixin
             };
             axios
-                .post('http://localhost:8080/api/v1/security-resources/agents', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/security-resources/agents', data, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         sessionStorage.setItem(global.AGENT_ID_KEY, response.data.id);

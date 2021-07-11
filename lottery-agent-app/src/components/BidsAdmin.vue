@@ -100,7 +100,7 @@ export default {
       },
       loadBids(status) {
         axios
-            .get('http://localhost:8080/api/v1/agents/'+this.agent.id+'/bids?status=' + status + '&page=1&size=10')
+            .get('http://' + this.BASE_URL + '/api/v1/agents/'+this.agent.id+'/bids?status=' + status + '&page=1&size=10')
             .then(response => {
                     this.bids = response.data.content;
                 })
@@ -112,7 +112,7 @@ export default {
           this.bidId = row.id;
           let data= {status: 'BIDDEN'};
           axios
-            .patch('http://localhost:8080/api/v1/agents/'+this.agent.id+'/bids/' + row.id, data, {headers: {'Content-Type': 'application/json'}})
+            .patch('http://' + this.BASE_URL + '/api/v1/agents/'+this.agent.id+'/bids/' + row.id, data, {headers: {'Content-Type': 'application/json'}})
             .then(
                 () =>  this.loadBids(this.status)
             )
@@ -128,7 +128,7 @@ export default {
               message: "实时赔率已大幅变化"
             };
           axios
-            .patch('http://localhost:8080/api/v1/agents/'+this.agent.id+'/bids/' + row.id, data, {headers: {'Content-Type': 'application/json'}})
+            .patch('http://' + this.BASE_URL + '/api/v1/agents/'+this.agent.id+'/bids/' + row.id, data, {headers: {'Content-Type': 'application/json'}})
             .then(
                 () =>  this.loadBids(this.status)
             )
@@ -142,13 +142,13 @@ export default {
     mounted () {
         let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
         axios
-            .get('http://localhost:8080/api/v1/agents/' + agentId)
+            .get('http://' + this.BASE_URL + '/api/v1/agents/' + agentId)
             .then(response => (this.agent = response.data))
             .catch(function (error) { 
                 console.log(error);
             });
         axios
-            .get('http://localhost:8080/api/v1/agents/'+agentId+'/bids?status=active&page=1&size=10')
+            .get('http://' + this.BASE_URL + '/api/v1/agents/'+agentId+'/bids?status=active&page=1&size=10')
             .then(response => {
                     this.bids = response.data.content;
                 })

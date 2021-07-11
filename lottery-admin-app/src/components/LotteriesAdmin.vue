@@ -223,7 +223,7 @@ export default {
     methods: {
         updateLotteryItemOption: function() {
             axios
-                .put('http://localhost:8080/api/v1/admins/123/lotteries/123/items/123/options/'+ this.lotteryItemOption.id + '/items', this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
+                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/123/options/'+ this.lotteryItemOption.id + '/items', this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("修改选项成功");
@@ -236,7 +236,7 @@ export default {
         },
         updateLotteryItem: function() {
             axios
-                .put('http://localhost:8080/api/v1/admins/123/lotteries/123/items/' + this.lotteryItem.id, this.lotteryItem, {headers: {'Content-Type': 'application/json'}})
+                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/' + this.lotteryItem.id, this.lotteryItem, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("修改项目成功");
@@ -249,7 +249,7 @@ export default {
         },
         updateLottery: function() {
             axios
-                .put('http://localhost:8080/api/v1/admins/123/lotteries/'+ this.lottery.id, this.lottery, {headers: {'Content-Type': 'application/json'}})
+                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/'+ this.lottery.id, this.lottery, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("修改彩票成功");
@@ -278,7 +278,7 @@ export default {
         },
         newLottory: function() {
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/', this.lottery, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/', this.lottery, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("增加彩票成功");
@@ -293,7 +293,7 @@ export default {
         },
         newLottoryItem: function() {
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/'+ this.lotteryItem.lottery.id + '/items', this.lotteryItem, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/'+ this.lotteryItem.lottery.id + '/items', this.lotteryItem, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("增加项目成功");
@@ -308,7 +308,7 @@ export default {
         },
         newLottoryItemOption: function() {
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/123/items/' + this.lotteryItem.id + '/options', this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/' + this.lotteryItem.id + '/options', this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("增加选项成功");
@@ -325,7 +325,7 @@ export default {
             this.lottery = row;
             this.lottoryDialogVisible = true;
             axios
-                .get('http://localhost:8080/api/v1/lotteries/' + row.id + '/lottery-items')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + row.id + '/lottery-items')
                 .then(response => {
                         this.lotteryItems = response.data;
                     })
@@ -337,7 +337,7 @@ export default {
             this.lotteryItem = row;
             this.lottoryItemDialogVisible = true;
             axios
-                .get('http://localhost:8080/api/v1/lotteries/' + row.lottery.id + '/items/' + row.id + '/options')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + row.lottery.id + '/items/' + row.id + '/options')
                 .then(response => {
                         this.lotteryItemOptions = response.data;
                     })
@@ -352,7 +352,7 @@ export default {
     },
     mounted () {
         axios
-            .get('http://localhost:8080/api/v1/lotteries?page=1&size=20')
+            .get('http://' + this.BASE_URL + '/api/v1/lotteries?page=1&size=20')
             .then(response => {
                     this.lotteries = response.data.content;
                 })

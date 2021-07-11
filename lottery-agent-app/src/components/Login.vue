@@ -42,14 +42,14 @@ export default {
                 "plainPassword": this.agentForm.password
             };
             axios
-                .post('http://localhost:8080/api/v1/security-resources/agents/sessions', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/security-resources/agents/sessions', data, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         sessionStorage.setItem(global.AGENT_ID_KEY, response.data.id);
                         this.$router.push({path: '/customers'});
                         }
                 )
-                .catch(function (error) { 
+                .catch(error=> { 
                     if (error.response.status == 400) {
                         this.$message.error("登陆信息错误");
                     } else {

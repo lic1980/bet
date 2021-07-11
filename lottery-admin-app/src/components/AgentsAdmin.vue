@@ -50,7 +50,7 @@ export default {
         },
         addAgent() {
             axios
-                .post('http://localhost:8080/api/v1/security-resources/agents', this.agent, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/security-resources/agents', this.agent, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     (response) => {
                             this.$message("添加代理成功");
@@ -67,7 +67,7 @@ export default {
     mounted () {
         let adminId = sessionStorage.getItem(global.ADMIN_ID_KEY);
         axios
-            .get('http://localhost:8080/api/v1/admins/' + adminId +'/agents')
+            .get('http://' + this.BASE_URL + '/api/v1/admins/' + adminId +'/agents')
             .then(response => (this.agents = response.data.content))
             .catch(function (error) { 
                 console.log(error);

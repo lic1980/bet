@@ -12,8 +12,8 @@ public class MD5Utils {
         MessageDigest md5 = null;
         
         try {
-            byte[] strTemp = initialString.getBytes(CHARSET);//得到字节数组
-            md5 = MessageDigest.getInstance(ALGORITHM);//得到MessageDigest 对象
+            byte[] strTemp = initialString.getBytes(CHARSET);
+            md5 = MessageDigest.getInstance(ALGORITHM);
             md5.reset();
             md5.update(strTemp);
             byte[] md = md5.digest();

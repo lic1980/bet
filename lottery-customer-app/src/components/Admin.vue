@@ -22,19 +22,16 @@
                         </el-table-column>
                         <el-table-column prop="createTime" label="投注时间">
                         </el-table-column>
-                        <el-table-column label="备注">
+                        <el-table-column label="动作">
                             <template slot-scope="scope">  
-                                <span v-if="scope.row.recipient==null">
-                                    未接受
-                                </span>
-                                <span v-if="scope.row.recipient!=null">
-                                    已接受
-                                </span>
+                                <el-button
+                                size="mini"
+                                @click="cancelBid(scope.row)">撤回</el-button>
                             </template>
                         </el-table-column>
                 </el-table>
                 </el-tab-pane>
-                <el-tab-pane label="已收注" name="recipient">
+                <el-tab-pane label="等开奖" name="recipient">
                 <el-table :data="bids" style="width: 100%">
                         <el-table-column prop="option.round.title" label="标题"></el-table-column>
                         <el-table-column  label="投注项">
@@ -126,7 +123,7 @@ export default {
     methods : {
         reloadCustomer: function(cusId) {
             axios
-            .get('http://localhost:8080/api/v1/customers/' + cusId)
+            .get('http://' + this.BASE_URL + '/api/v1/customers/' + cusId)
             .then(response => (this.customer = response.data))
             .catch(function (error) { 
                 console.log(error);
@@ -135,13 +132,44 @@ export default {
         reloadBids :  function(role) {
             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
             axios
-                .get('http://localhost:8080/api/v1/customers/'+ cusId +'/bids?role=' +role + '&page=1&size=20')
+                .get('http://' + this.BASE_URL + '/api/v1/customers/'+ cusId +'/bids?role=' +role + '&page=1&size=20')
                 .then(
                     response => {
                             this.bids = response.data.content;
                         }
                     )
                 .catch(function (error) { 
+                    console.log(error);
+                });
+        },
+        cancelBid: function(bid) {
+             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
+            let data = {
+                recipient: {
+                    id: cusId,
+                },
+                status: "CANCEL",
+            }
+            axios
+                .patch('http://' + this.BASE_URL + '/api/v1/customers/'+cusId+'/bids/' + bid, data)
+                .then(
+                    () => {
+                        let bids = []
+                        this.$message("撤回成功");
+                        for (let i =0; i < this.bids.length; i++) {
+                           if (bid.id != this.bids[i].id) {
+                               bids.push(this.bids[i])
+                           }
+                        }
+                        this.bids = bids
+                        this.reloadCustomer(cusId)
+                    })
+                .catch(error => { 
+                    if (error.response.status == 400) {
+                        this.$message.error("已被接受，无法撤回");
+                    } else {
+                        this.$message.error("服务器错误");
+                    }
                     console.log(error);
                 });
         },
@@ -154,7 +182,7 @@ export default {
                 status: "ACCEPTED",
             }
             axios
-                .patch('http://localhost:8080/api/v1/customers/'+cusId+'/bids/' + bid.id, data)
+                .patch('http://' + this.BASE_URL + '/api/v1/customers/'+cusId+'/bids/' + bid.id, data)
                 .then(
                     () => {
                         let bids = []
@@ -167,7 +195,12 @@ export default {
                         this.bids = bids
                         this.reloadCustomer(cusId)
                     })
-                .catch(function (error) { 
+                .catch(error => { 
+                    if (error.response.status == 400) {
+                        this.$message.error("已被别人接收");
+                    } else {
+                        this.$message.error("服务器错误");
+                    }
                     console.log(error);
                 });
         },
@@ -183,7 +216,7 @@ export default {
                 return
             }
             axios
-                .patch('http://localhost:8080/api/v1/security-resources/customers', this.customer)
+                .patch('http://' + this.BASE_URL + '/api/v1/security-resources/customers', this.customer)
                 .then(
                     response => {
                         this.customer = response.data

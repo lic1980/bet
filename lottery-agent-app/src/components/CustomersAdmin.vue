@@ -121,7 +121,7 @@ export default {
             let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
             this.customer.agent.id = agentId;
             axios
-                .post('http://localhost:8080/api/v1/security-resources/customers', this.customer, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/security-resources/customers', this.customer, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     (response) => {
                             this.$message("添加客户成功");
@@ -152,7 +152,7 @@ export default {
                 "amount": this.amount
             };
             axios
-                .post('http://localhost:8080/api/v1/agents/'+this.agent.id+'/customers/' +this.customer.id+ '/exchanges', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/agents/'+this.agent.id+'/customers/' +this.customer.id+ '/exchanges', data, {headers: {'Content-Type': 'application/json'}})
                 .then(response => {
                     let deposit = response.data;
                     for (let cus of this.customers) {
@@ -182,14 +182,14 @@ export default {
     mounted () {
         let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
         axios
-            .get('http://localhost:8080/api/v1/agents/' + agentId)
+            .get('http://' + this.BASE_URL + '/api/v1/agents/' + agentId)
             .then(response => (this.agent = response.data))
             .catch(function (error) { 
                 this.$message.error("访问代理");
                 console.log(error);
             });
         axios
-            .get('http://localhost:8080/api/v1/agents/'+ agentId + '/customers?page=1&size=10')
+            .get('http://' + this.BASE_URL + '/api/v1/agents/'+ agentId + '/customers?page=1&size=10')
             .then(response => {
                     this.customers = response.data.content;
                 })

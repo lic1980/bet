@@ -388,7 +388,7 @@ export default {
     methods: {
         reloadRound: function(status) {
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds?status=' + status + '&page=1&size=50')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds?status=' + status + '&page=1&size=50')
                 .then(response => {
                         this.lottoryRounds = response.data.content;
                     })
@@ -402,7 +402,7 @@ export default {
         },
         updateLotteryRoundOption:function() {
             axios
-                .put('http://localhost:8080/api/v1/admins/123/lotteries/123/rounds/'+ this.lotteryRound.id + "/options/" + this.lotteryRoundOption.id, this.lotteryRoundOption, {headers: {'Content-Type': 'application/json'}})
+                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/rounds/'+ this.lotteryRound.id + "/options/" + this.lotteryRoundOption.id, this.lotteryRoundOption, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("修改彩票赔率成功");
@@ -421,7 +421,7 @@ export default {
                 round: {id: this.lotteryRound.id}
             }
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/123/rounds/'+ this.lotteryRound.id + "/options", data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/rounds/'+ this.lotteryRound.id + "/options", data, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("增加彩票赔率成功");
@@ -436,7 +436,7 @@ export default {
         },
         addLotteryRound: function() {
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/rounds', this.lotteryRound, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/rounds', this.lotteryRound, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     response => {
                         this.$message("增加彩票实例成功");
@@ -460,7 +460,7 @@ export default {
                 )
             }
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/' + this.lotteryRound.lottery.id + '/rounds/' + this.lotteryRound.id + '/results', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/' + this.lotteryRound.lottery.id + '/rounds/' + this.lotteryRound.id + '/results', data, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("增加彩票结果成功");
@@ -479,7 +479,7 @@ export default {
                 tags.push(tag)
             }
             axios
-                .post('http://localhost:8080/api/v1/admins/123/lotteries/rounds/' + this.lotteryRound.id + '/tags', tags, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/rounds/' + this.lotteryRound.id + '/tags', tags, {headers: {'Content-Type': 'application/json'}})
                 .then(response => {
                     this.lotteryRoundTags = response.data.content;
                     this.$message("修改彩票实例标签成功");
@@ -491,7 +491,7 @@ export default {
         },
         updateLotteryRound: function() {
             axios
-                .put('http://localhost:8080/api/v1/admins/123/lotteries/rounds/'+ this.lotteryRound.id, this.lotteryRound, {headers: {'Content-Type': 'application/json'}})
+                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/rounds/'+ this.lotteryRound.id, this.lotteryRound, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("修改彩票实例成功");
@@ -506,7 +506,7 @@ export default {
         openNewLottoryRoundDialog: function() {
             this.newLottoryRoundDialogVisible = true;
             axios
-                .get('http://localhost:8080/api/v1/lotteries')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries')
                 .then(response => {
                         this.lotteries = response.data.content;
                     })
@@ -515,7 +515,7 @@ export default {
                     console.log(error);
             });
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/tags')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/tags')
                 .then(response => {
                         this.lotteryRoundTags = response.data.content;
                     })
@@ -527,12 +527,12 @@ export default {
         openNewLottoryRoundOptionDialog: function() {
             this.newLottoryRoundOptionDialogVisible = true;
             axios
-                .get('http://localhost:8080/api/v1/lotteries/' + this.lotteryRound.lottery.id + '/options')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + this.lotteryRound.lottery.id + '/options')
                 .then(response => {
                     let lotteryItemOptions = response.data;
                     let selections = []
                     axios
-                        .get('http://localhost:8080/api/v1/lotteries/rounds/' + this.lotteryRound.id + '/options')
+                        .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + this.lotteryRound.id + '/options')
                         .then(
                             response => {
                                 let lotteryRoundOptions = response.data;
@@ -562,7 +562,7 @@ export default {
             this.lotteryRound = row;
             this.lottoryRoundDialogVisible = true;
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/tags')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/tags')
                 .then(response => {
                         this.lotteryRoundTags = response.data.content;
                     })
@@ -571,7 +571,7 @@ export default {
                     console.log(error);
             });
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/' + row.id + '/tags')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + row.id + '/tags')
                 .then(response => {
                         let tags = response.data.content;
                         for (var i = 0 ; i < tags.length; i++) {
@@ -583,7 +583,7 @@ export default {
                     console.log(error);
             });
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/' + row.id + '/options')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + row.id + '/options')
                 .then(response => {
                         this.lotteryRoundOptions = response.data;
      
@@ -593,7 +593,7 @@ export default {
                     console.log(error);
             });
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/' + row.id)
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + row.id)
                 .then(response => {
                         this.lotteryRound = response.data;
                     })
@@ -611,7 +611,7 @@ export default {
             this.lotteryRound = row;
             let lottoryRoundOptionIds = []
             axios
-                .get('http://localhost:8080/api/v1/lotteries/' + row.lottery.id +'/rounds/' +  row.id +'/results')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/' + row.lottery.id +'/rounds/' +  row.id +'/results')
                 .then(response => {
                         let results = response.data;
                         for (let i=0; i < results.length; i ++) {
@@ -625,7 +625,7 @@ export default {
                     console.log(error);
             });
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/' + row.id + '/options')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' + row.id + '/options')
                 .then(response => {
                         this.lotteryRoundOptions = response.data;
                         let lotteryRoundOptionsInLotteryItemId = new Map();
@@ -655,7 +655,7 @@ export default {
             this.lotteryRound = row
             this.lotteryRoundSettleDialogVisible = true;
             axios
-                .get('http://localhost:8080/api/v1/lotteries/rounds/' +  row.id +'/options?scope=win')
+                .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/' +  row.id +'/options?scope=win')
                 .then(response => {
                         this.lottoryRoundOptionsWin = response.data;
 
@@ -670,7 +670,7 @@ export default {
                 id: id,
             }
             axios
-                .post('http://localhost:8080/api/v1/admins/123/actions/settle-round', data)
+                .post('http://' + this.BASE_URL + '/api/v1/admins/123/actions/settle-round', data)
                 .then(() => {
                         this.$message("开始结算");
                     })
@@ -682,7 +682,7 @@ export default {
     },
     mounted () {
         axios
-            .get('http://localhost:8080/api/v1/lotteries/rounds?page=1&size=20')
+            .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds?page=1&size=20')
             .then(response => {
                     this.lottoryRounds = response.data.content;
                 })
@@ -690,7 +690,7 @@ export default {
                 console.log(error);
             });
         axios
-            .get('http://localhost:8080/api/v1/lotteries/rounds/tags?page=1&size=20')
+            .get('http://' + this.BASE_URL + '/api/v1/lotteries/rounds/tags?page=1&size=20')
             .then(response => {
                     this.lotteryRoundTags = response.data.content;
                 })
