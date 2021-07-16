@@ -72,7 +72,6 @@ import axios from 'axios'
 export default {
     data () {
         return {
-            optionBidFee:0,
             bidDialogVisible:false,
             current: null,
             times: 1,
@@ -93,20 +92,20 @@ export default {
         },
         bid: function() {
             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
-            if (this.optionBidFee < global.FEE_MIN) {
+            if (this.customerBid.fee < global.FEE_MIN) {
                 this.$message("最小投注不能小于" + global.FEE_MIN);
                 return;
             }
-            if (this.optionBidFee > this.customer.deposit) {
+            if (this.customerBid.fee > this.customer.deposit) {
                 this.$message("余额不足");
                 return;
             }
-            if (this.optionBidFee > global.FEE_MAX) {
+            if (this.customerBid.fee > global.FEE_MAX) {
                 this.$message("超过最大投注额");
                 return;
             }
-            if (this.customerBid.odds <= 1) {
-                this.$message("赔率不能小于等于1");
+            if (this.customerBid.odds < 1) {
+                this.$message("赔率不能小于1");
                 return;
             }
             let data = {

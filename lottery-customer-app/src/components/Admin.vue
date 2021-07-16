@@ -22,16 +22,25 @@
                         </el-table-column>
                         <el-table-column prop="createTime" label="投注时间">
                         </el-table-column>
+                        <el-table-column label="状态">
+                             <template slot-scope="scope">  
+                                <span v-if="scope.row.status == 'NEW'">等待接受</span>
+                                <span v-if="scope.row.status == 'ACCEPTED'">已接受</span>
+                                <span v-if="scope.row.status == 'CANCEL'">撤回</span>
+                                <span v-if="scope.row.status == 'SETTLED'">已结算</span>
+                             </template>
+                        </el-table-column>
                         <el-table-column label="动作">
                             <template slot-scope="scope">  
-                                <el-button
+                                <el-button v-if="scope.row.status == 'NEW'"
                                 size="mini"
                                 @click="cancelBid(scope.row)">撤回</el-button>
                             </template>
                         </el-table-column>
                 </el-table>
                 </el-tab-pane>
-                <el-tab-pane label="等开奖" name="recipient">
+                
+                <el-tab-pane label="已收注" name="recipient">
                 <el-table :data="bids" style="width: 100%">
                         <el-table-column prop="option.round.title" label="标题"></el-table-column>
                         <el-table-column  label="投注项">
@@ -43,35 +52,17 @@
                         </el-table-column>
                         <el-table-column prop="createTime" label="投注时间">
                         </el-table-column>
-                        <el-table-column label="备注">
-                            
-                        </el-table-column>
-                </el-table>
-                </el-tab-pane>
-                <el-tab-pane label="去收注" name="none">
-                <el-table :data="bids" style="width: 100%">
-                        <el-table-column prop="option.round.title" label="标题"></el-table-column>
-                        <el-table-column  label="投注项">
-                            <template slot-scope="scope">  
-                                目标：{{ scope.row.option.optionText }}<br/>
-                                费用：{{ scope.row.fee }}<br/>
-                                赔率：{{ scope.row.odds }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="createTime" label="投注时间">
-                        </el-table-column>
-                        <el-table-column label="动作">
-                            <template slot-scope="scope">
-                                <el-button
-                                size="mini"
-                                @click="acceptBid(scope.row)">收注</el-button>
-                            </template>
+                        <el-table-column label="状态">
+                             <template slot-scope="scope">  
+                                <span v-if="scope.row.status == 'NEW'">等待接受</span>
+                                <span v-if="scope.row.status == 'ACCEPTED'">已接受</span>
+                                <span v-if="scope.row.status == 'CANCEL'">撤回</span>
+                                <span v-if="scope.row.status == 'SETTLED'">已结算</span>
+                             </template>
                         </el-table-column>
                 </el-table>
                 </el-tab-pane>
             </el-tabs>
-
-            
         </div>
 
         <div>
@@ -145,13 +136,10 @@ export default {
         cancelBid: function(bid) {
              let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
             let data = {
-                recipient: {
-                    id: cusId,
-                },
                 status: "CANCEL",
             }
             axios
-                .patch('http://' + this.BASE_URL + '/api/v1/customers/'+cusId+'/bids/' + bid, data)
+                .patch('http://' + this.BASE_URL + '/api/v1/customers/'+cusId+'/bids/' + bid.id, data)
                 .then(
                     () => {
                         let bids = []
@@ -176,9 +164,6 @@ export default {
         acceptBid: function(bid)  {
             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
             let data = {
-                recipient: {
-                    id: cusId,
-                },
                 status: "ACCEPTED",
             }
             axios
