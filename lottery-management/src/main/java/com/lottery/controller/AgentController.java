@@ -3,9 +3,12 @@ package com.lottery.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lottery.exception.InternalServiceException;
 import com.lottery.exception.InvalidParameter;
 import com.lottery.model.Agent;
 import com.lottery.model.Customer;
@@ -27,6 +31,8 @@ import com.lottery.service.CustomerService;
 @RestController
 @RequestMapping(value = "/api/v1")
 public class AgentController {
+	private static final Logger LOGGER = Logger.getLogger(AgentController.class);
+	
 	private static final int DEPOSIT_MAX = 5000;
 	private static final int DEPOSIT_MIN = -5000;
 	@Autowired
@@ -55,28 +61,40 @@ public class AgentController {
 			statuses.add(CustomerBidStatus.NEW);
 			statuses.add(CustomerBidStatus.ACCEPTED);
 		}
-		return customerBidService.findByCustomerAgentAndStatus(id, statuses, page - 1, size);
+		return customerBidService.findByInitiatorAgentAndStatus(id, statuses, page - 1, size);
 	}
-
-//	@PatchMapping(value = "/agents/{id}/bids/{bidId}")
-//	public CustomerBid changeBid(@PathVariable(name = "id") Long agentId, @PathVariable(name = "bidId") Long bidId, @RequestBody CustomerBid bid)
-//			throws InvalidParameter {
-//		CustomerBid customerBid = customerBidService.findById(bidId).orElseThrow(InvalidParameter::new);
-//		if (!agentId.equals(customerBid.getCustomer().getAgent().getId())) {
-//			throw new InvalidParameter();
-//		}
-//		if (customerBid.getStatus() == CustomerBidStatus.BIDDEN || customerBid.getStatus() == CustomerBidStatus.CANCEL || customerBid.getStatus() == CustomerBidStatus.REJECTED ) {
-//			throw new InvalidParameter();
-//		}
-//
-//		customerBid.setStatus(bid.getStatus());
-//		return customerBidService.saveOrUpdateCustomerBid(customerBid);
-//	}
 
 	@GetMapping(value = "/agents/{id}/customers")
 	public Page<Customer> getCustomers(@PathVariable(value = "id") Long agentId, @RequestParam int page,
 			@RequestParam int size) {
 		return customerService.findByAgent(agentId, page - 1, size);
+	}
+	
+	@PostMapping(value = "/agents/{id}/customers")
+	public Customer addCustomer(@RequestBody Customer customer) throws InvalidParameter, InternalServiceException {
+		if (StringUtils.isEmpty(customer.getTel())) {
+			throw new InvalidParameter();
+		}
+		if (customerService.findByTel(customer.getTel()).isPresent()) {
+			throw new InvalidParameter();
+		}
+		if (StringUtils.isEmpty(customer.getPlainPassword())) {
+			customer.setPlainPassword(customer.getTel());
+		}
+		return customerService.saveOrUpdate(customer);
+	}
+	
+	@PatchMapping(value = "/agents/{id}/customers/{aid}")
+	public Customer patchCustomer(@PathVariable Long aid, @RequestBody Customer customer) throws InvalidParameter, InternalServiceException {
+		if (StringUtils.isEmpty(aid)) {
+			throw new InvalidParameter();
+		}
+		Customer target =  customerService.findById(aid).orElseThrow(InvalidParameter::new);
+		
+		if (!StringUtils.isEmpty(customer.getNewPlainPassword())) {
+			target.setPlainPassword(customer.getNewPlainPassword());
+		}
+		return customerService.saveOrUpdate(target);
 	}
 
 	@PostMapping(value = "/agents/{id}/customers/{customerId}/exchanges")
@@ -96,7 +114,7 @@ public class AgentController {
 		if (!customer.getAgent().getId().equals(agent.getId())) {
 			throw new InvalidParameter();
 		}
-		if (customer.getDeposit() - exchange.getAmount() < 0) {
+		if (customer.getDeposit() + exchange.getAmount() < 0) {
 			throw new InvalidParameter();
 		}
 		return customerDepositRecordService.changeCustomerDepositRecord(exchange);

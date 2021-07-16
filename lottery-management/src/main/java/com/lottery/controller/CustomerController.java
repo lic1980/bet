@@ -1,5 +1,8 @@
 package com.lottery.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,10 +43,14 @@ public class CustomerController {
 		if ("recipient".equals(role)) {
 			return customerBidService.findByRecipient(id, page - 1, size);
 		} 
-		if ("initiator".equals(role))  {
-			return customerBidService.findByInitiator(id, page - 1, size);
-		}
-		return customerBidService.findAvailable(id, page - 1, size);
+		return customerBidService.findByInitiator(id, page - 1, size);
+	}
+	
+	@GetMapping(value = "/customers/{id}/customers/bids")
+	public Page<CustomerBid> getOtherCustomerBids(@PathVariable Long id, @RequestParam(defaultValue="none") String role, @RequestParam int page, @RequestParam int size) {
+		List<CustomerBidStatus> statuses = new ArrayList<>();
+		statuses.add(CustomerBidStatus.NEW);
+		return customerBidService.findByInitiatorNotAndStatus(id, statuses, page - 1, size);
 	}
 	
 	@GetMapping(value = "/customers/{cid}/bids/{bid}")
@@ -51,16 +58,19 @@ public class CustomerController {
 		return customerBidService.findById(bid).orElseThrow(InvalidParameter::new);
 	}
 
-	@PatchMapping(value = "/customers/{cid}/bids/{bid}")
-	public CustomerBid cancelOrAcceptBid(@PathVariable Long cid, @PathVariable Long bid, @RequestBody CustomerBid requestBid) throws InvalidParameter {
-		
-		if (requestBid.getRecipient() == null && requestBid.getStatus() == CustomerBidStatus.CANCEL) {
-			return customerBidService.cancelBid(bid);
+	@PatchMapping(value = "/customers/{cid}/bids/{bidId}")
+	public CustomerBid cancelOrAcceptBid(@PathVariable Long cid, @PathVariable Long bidId, @RequestBody CustomerBid requestBid) throws InvalidParameter {
+		CustomerBid bid = customerBidService.findById(bidId).orElseThrow(InvalidParameter::new);
+
+		if (cid.equals(bid.getInitiator().getId()) && bid.getRecipient() == null && requestBid.getStatus() == CustomerBidStatus.CANCEL) {
+			return customerBidService.cancelBid(bidId);
 		}
-		if (requestBid.getRecipient() != null && requestBid.getStatus() == CustomerBidStatus.ACCEPTED) {
-			Customer recipient = new Customer();
-			recipient.setId(cid);
-			return customerBidService.acceptBid(bid, recipient);
+		if (bid.getRecipient() == null && requestBid.getStatus() == CustomerBidStatus.ACCEPTED) {
+			Customer recipient = customerService.findById(cid).orElseThrow(InvalidParameter::new);
+			if (recipient.getDeposit() - bid.getFee()*bid.getOdds() < 0) {
+				throw new InvalidParameter();
+			}
+			return customerBidService.acceptBid(bidId, recipient);
 		}
 		throw new InvalidParameter();
 	}
@@ -68,7 +78,7 @@ public class CustomerController {
 	@PostMapping(value = "/customers/{id}/bids")
 	public CustomerBid addCustomerBid(@PathVariable(value = "id") Long customerId, @RequestBody CustomerBid bid)
 			throws InvalidParameter {
-		if (bid.getFee() == null || bid.getFee() <=1 || bid.getOption() == null || bid.getOption().getId() == null || bid.getOdds() == null) {
+		if (bid.getFee() == null || bid.getFee() < 10 || bid.getOption() == null || bid.getOption().getId() == null || bid.getOdds() == null) {
 			throw new InvalidParameter();
 		}
 

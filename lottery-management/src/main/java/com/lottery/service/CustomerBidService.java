@@ -55,14 +55,14 @@ public class CustomerBidService {
 	
 	@Transactional(rollbackOn = {Exception.class})
 	public CustomerBid acceptBid(Long bid, Customer recipient) throws InvalidParameter {
-		int num = repo.updateCustomerBidRecipientById(bid, recipient);
+		int num = repo.updateCustomerBidRecipientById(bid, recipient, new Date());
 		if ( num == 0) {
 			throw new InvalidParameter();
 		}
 		CustomerBid customerBid = repo.findById(bid).orElseThrow(InvalidParameter::new);
 		CustomerDepositExchange exchange = new CustomerDepositExchange();
-		exchange.setAmount(0 - customerBid.getFee());
-		exchange.setCustomer(customerBid.getRecipient());
+		exchange.setAmount(0 - customerBid.getFee() * customerBid.getOdds());
+		exchange.setCustomer(recipient);
 		exchange.setType(CustomerDepositExchangeType.ACCEPT);
 		exchange.setReference(customerBid.getId());
 		customerDepositRecordService.changeCustomerDepositRecord(exchange);
@@ -140,11 +140,11 @@ public class CustomerBidService {
 		return false;
 	}
 	
-	public Page<CustomerBid> findAvailable(Long cusId, int pageNum, int pageSize) {
+	public Page<CustomerBid> findByInitiatorNotAndStatus(Long cusId, List<CustomerBidStatus> statuses, int pageNum, int pageSize) {
 		PageRequest page = PageRequest.of(pageNum, pageSize);
 		Customer cus = new Customer();
 		cus.setId(cusId);
-		return repo.findByInitiatorNotAndRecipientIsNull(cus, page);
+		return repo.findByInitiatorNotAndStatusIn(cus, statuses, page);
 	}
 	
 	public Page<CustomerBid> findByInitiator(Long cusId, int pageNum, int pageSize) {
@@ -161,7 +161,7 @@ public class CustomerBidService {
 		return repo.findByRecipient(cus, page);
 	}
 	
-	public Page<CustomerBid> findByCustomerAgentAndStatus(Long agentId, List<CustomerBidStatus> statuses, int pageNum, int pageSize) {
+	public Page<CustomerBid> findByInitiatorAgentAndStatus(Long agentId, List<CustomerBidStatus> statuses, int pageNum, int pageSize) {
 		PageRequest page = PageRequest.of(pageNum, pageSize);
 		Agent agent = new Agent();
 		agent.setId(agentId);

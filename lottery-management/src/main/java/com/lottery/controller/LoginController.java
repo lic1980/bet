@@ -94,12 +94,7 @@ public class LoginController {
 		if (StringUtils.isEmpty(agent.getTel())) {
 			throw new InvalidParameter();
 		}
-		try {
-			return agentService.saveOrUpdate(agent);
-		} catch (IOException | WriterException e) {
-			LOGGER.error("fail to add agent", e);
-			throw new InternalServiceException();
-		}
+		return agentService.saveOrUpdate(agent);
 	}
 	
 	
@@ -118,12 +113,7 @@ public class LoginController {
 		Agent target =  agentService.validateByIdAndPassword(agentId, agent.getPlainPassword()).orElseThrow(InvalidParameter::new);
 		
 		target.setPlainPassword(agent.getNewPlainPassword());
-		try {
-			return agentService.saveOrUpdate(target);
-		} catch (IOException | WriterException e) {
-			LOGGER.error("fail to patch agent", e);
-			throw new InternalServiceException();
-		}
+		return agentService.saveOrUpdate(target);
 	}
 	
 	@PostMapping(value = "/security-resources/customers/sessions")

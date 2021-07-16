@@ -46,25 +46,15 @@ public class AgentService {
 		return repo.findByIdAndPassword(id, SecurityUtils.encryptPassword(plainPassword));
 	}
 	
-	private Agent save(Agent agent) throws IOException, WriterException {
-		long id = IdUtils.generateId();
-		agent.setId(id);
-		agent.setPassword(SecurityUtils.encryptPassword(agent.getPlainPassword()));
-		String qrCodeImage = qrCodeService.createQRCodeImg(id);
-		agent.setQrCodeImage(qrCodeImage);
-		return repo.save(agent);
-	}
-	
-	private Agent update(Agent agent) {
-		return repo.save(agent);
-	}
-	
-	public Agent saveOrUpdate(Agent agent) throws IOException, WriterException {
-		if (StringUtils.isEmpty(agent.getId())) {
-			return save(agent);
-		} else {
-			return update(agent);
+	public Agent saveOrUpdate(Agent agent) {
+		if (!StringUtils.isEmpty(agent.getPlainPassword())) {
+			agent.setPassword(SecurityUtils.encryptPassword(agent.getPlainPassword()));
 		}
+		if (StringUtils.isEmpty(agent.getId())) {
+			long id = IdUtils.generateId();
+			agent.setId(id);
+		} 
 		
+		return repo.save(agent);
 	}
 }

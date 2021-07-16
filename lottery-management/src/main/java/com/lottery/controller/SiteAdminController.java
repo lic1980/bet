@@ -1,11 +1,15 @@
 package com.lottery.controller;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.zxing.WriterException;
+import com.lottery.exception.InternalServiceException;
 import com.lottery.exception.InvalidParameter;
 import com.lottery.model.Agent;
 import com.lottery.model.Customer;
@@ -35,6 +41,8 @@ import com.lottery.service.LotteryService;
 @RestController
 @RequestMapping(value = "/api/v1")
 public class SiteAdminController {
+	private static final Logger LOGGER = Logger.getLogger(SiteAdminController.class);
+	
 	@Autowired
 	private AgentService agentService;
 	@Autowired
@@ -53,7 +61,40 @@ public class SiteAdminController {
 	private LotteryRoundTagService lotteryRoundTagService;
 
 	
-
+	@PostMapping(value = "/admins/{id}/agents")
+	public Agent postAgent(@RequestBody Agent agent) throws InvalidParameter, InternalServiceException {
+		if (StringUtils.isEmpty(agent.getTel())) {
+			throw new InvalidParameter();
+		}
+		if (agentService.findByTel(agent.getTel()).isPresent()) {
+			throw new InvalidParameter();
+		}
+		if (StringUtils.isEmpty(agent.getPlainPassword())) {
+			agent.setPlainPassword(agent.getTel());
+		}
+		return agentService.saveOrUpdate(agent);
+	}
+	
+	@PatchMapping(value = "/admins/{id}/agents/{aid}")
+	public Agent patchAgent(@PathVariable Long aid, @RequestBody Agent agent) throws InvalidParameter, InternalServiceException {
+		if (StringUtils.isEmpty(aid)) {
+			throw new InvalidParameter();
+		}
+		Agent target =  agentService.findById(aid).orElseThrow(InvalidParameter::new);
+		
+		if (!StringUtils.isEmpty((agent.getNewPlainPassword()))) {
+			target.setPlainPassword(agent.getNewPlainPassword());
+		}
+		if (!StringUtils.isEmpty((agent.getName()))) {
+			target.setName(agent.getName());
+		}
+		if (!StringUtils.isEmpty((agent.getWeixin()))) {
+			target.setWeixin(agent.getWeixin());
+		}
+		
+		return agentService.saveOrUpdate(target);
+	}
+	
 	@GetMapping(value = "/admins/{id}/agents")
 	public Page<Agent> getAllAgents(@RequestParam int page, @RequestParam int size) throws InvalidParameter {
 		return agentService.findAll(page - 1, size);
