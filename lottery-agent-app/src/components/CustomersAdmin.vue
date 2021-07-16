@@ -1,7 +1,7 @@
 <template>
     <div>
         <div>
-            <el-button type="primary" size="small" @click="openNewCustomerDiag()" :disabled="startExchange">新增客户</el-button>
+            <el-button size="small" @click="openNewCustomerDiag()" :disabled="startExchange">新增客户</el-button>
         </div>
         <div>
             <div>客户列表：</div> 
@@ -16,7 +16,9 @@
                             <el-button
                             size="mini"
                             @click="openExchangeDiag(scope.row)">充值/取值</el-button>
-
+                            <el-button
+                            size="mini"
+                            @click="resetAgentPassword(scope.row)">重设密码</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -121,7 +123,7 @@ export default {
             let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
             this.customer.agent.id = agentId;
             axios
-                .post('http://' + this.BASE_URL + '/api/v1/security-resources/customers', this.customer, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/agents/' + agentId + '/customers', this.customer, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     (response) => {
                             this.$message("添加客户成功");
@@ -131,6 +133,21 @@ export default {
                 )
                 .catch(function (error) { 
                     this.$message.error("添加客户失败，检查ID是否已存在");
+                    console.log(error)
+                });
+        },
+        resetAgentPassword(customer) {
+            customer.newPlainPassword = customer.tel
+            let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
+            axios
+                .patch('http://' + this.BASE_URL + '/api/v1/agents/' + agentId + '/customers/' + customer.id, customer, {headers: {'Content-Type': 'application/json'}})
+                .then(
+                    () => {
+                            this.$message("重设密码成功");
+                        }
+                )
+                .catch(error => { 
+                    this.$message.error("重设密码失败");
                     console.log(error)
                 });
         },
@@ -152,7 +169,7 @@ export default {
                 "amount": this.amount
             };
             axios
-                .post('http://' + this.BASE_URL + '/api/v1/agents/'+this.agent.id+'/customers/' +this.customer.id+ '/exchanges', data, {headers: {'Content-Type': 'application/json'}})
+                .post('http://' + this.BASE_URL + '/api/v1/agents/' + this.agent.id + '/customers/' +this.customer.id+ '/exchanges', data, {headers: {'Content-Type': 'application/json'}})
                 .then(response => {
                     let deposit = response.data;
                     for (let cus of this.customers) {
