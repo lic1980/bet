@@ -223,15 +223,16 @@ export default {
     methods: {
         updateLotteryItemOption: function() {
             axios
-                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/123/options/'+ this.lotteryItemOption.id + '/items', this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
+                .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/123/options/'+ this.lotteryItemOption.id, this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
                         this.$message("修改选项成功");
                         this.lottoryItemOptionDialogVisible = false
                     }
                 )
-                .catch(function (error) { 
+                .catch(error => { 
                     console.log(error);
+                    this.$message.error("修改选项失败");
                 });
         },
         updateLotteryItem: function() {
@@ -243,8 +244,9 @@ export default {
                         this.lottoryItemDialogVisible = false;
                     }
                 )
-                .catch(function (error) { 
+                .catch(error =>  { 
                     console.log(error);
+                    this.$message.error("修改项目失败");
                 });
         },
         updateLottery: function() {

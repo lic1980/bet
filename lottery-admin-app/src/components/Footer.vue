@@ -1,6 +1,5 @@
 <template>
-    <div>旺财</div>
-
+    <div> </div>
 </template>
 
 <script>
