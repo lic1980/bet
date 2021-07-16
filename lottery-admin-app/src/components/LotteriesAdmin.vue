@@ -263,7 +263,6 @@ export default {
                 });
         },
         openNewLottoryDiag: function() {
-
             this.newLottoryDialogVisible = true;
         },
         openNewLottoryItemDialog: function(lotteryId) {
