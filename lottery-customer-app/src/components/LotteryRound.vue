@@ -115,6 +115,14 @@ export default {
                 "odds": this.customerBid.odds,
                  "fee":this.customerBid.fee,
             };
+            this.bidDisabled = true
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+
             axios
                 .post('http://' + this.BASE_URL + '/api/v1/customers/' + cusId +'/bids', data, {headers: {'Content-Type': 'application/json'}})
                 .then(
@@ -122,9 +130,16 @@ export default {
                         this.$message("投注成功");
                         this.customer.deposit = this.customer.deposit - response.data.fee;
                         this.bidDialogVisible = false;
+                        loading.close();
                     }
                 )
-                .catch(function (error) { 
+                .catch(error => { 
+                    loading.close();
+                    if (error.response.status == 400) {
+                        this.$message.error("投注失败");
+                    } else {
+                        this.$message.error("服务器错误");
+                    }
                     console.log(error);
                 });
         }

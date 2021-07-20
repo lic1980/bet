@@ -134,10 +134,16 @@ export default {
                 });
         },
         cancelBid: function(bid) {
-             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
+            let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
             let data = {
                 status: "CANCEL",
             }
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .patch('http://' + this.BASE_URL + '/api/v1/customers/'+cusId+'/bids/' + bid.id, data)
                 .then(
@@ -151,44 +157,20 @@ export default {
                         }
                         this.bids = bids
                         this.reloadCustomer(cusId)
+                        loading.close();
                     })
                 .catch(error => { 
+                    this.cancelDisabled = false;
                     if (error.response.status == 400) {
                         this.$message.error("已被接受，无法撤回");
                     } else {
                         this.$message.error("服务器错误");
                     }
                     console.log(error);
+                    
                 });
         },
-        acceptBid: function(bid)  {
-            let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
-            let data = {
-                status: "ACCEPTED",
-            }
-            axios
-                .patch('http://' + this.BASE_URL + '/api/v1/customers/'+cusId+'/bids/' + bid.id, data)
-                .then(
-                    () => {
-                        let bids = []
-                        this.$message("收注成功");
-                        for (let i =0; i < this.bids.length; i++) {
-                           if (bid.id != this.bids[i].id) {
-                               bids.push(this.bids[i])
-                           }
-                        }
-                        this.bids = bids
-                        this.reloadCustomer(cusId)
-                    })
-                .catch(error => { 
-                    if (error.response.status == 400) {
-                        this.$message.error("已被别人接收");
-                    } else {
-                        this.$message.error("服务器错误");
-                    }
-                    console.log(error);
-                });
-        },
+        
         handleSwitchBids: function(tab)  {
             this.reloadBids(tab.name);
         },

@@ -74,16 +74,25 @@ export default {
         addAgent() {
             this.agent.plainPassword = this.agent.tel
             let adminId = sessionStorage.getItem(global.ADMIN_ID_KEY);
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .post('http://' + this.BASE_URL + '/api/v1/admins/' + adminId +'/agents', this.agent, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     (response) => {
+                            loading.close()
                             this.$message("添加代理成功");
                             this.agents.push(response.data);
                             this.newAgentDialogVisible = false;
+
                         }
                 )
                 .catch(error => { 
+                    loading.close()
                     this.$message.error("添加代理失败，检查ID是否已存在");
                     console.log(error)
                 });

@@ -222,44 +222,69 @@ export default {
     },
     methods: {
         updateLotteryItemOption: function() {
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/123/options/'+ this.lotteryItemOption.id, this.lotteryItemOption, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
+                        loading.close()
                         this.$message("修改选项成功");
                         this.lottoryItemOptionDialogVisible = false
                     }
                 )
                 .catch(error => { 
+                    loading.close()
                     console.log(error);
                     this.$message.error("修改选项失败");
                 });
         },
         updateLotteryItem: function() {
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/123/items/' + this.lotteryItem.id, this.lotteryItem, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
+                        loading.close()
                         this.$message("修改项目成功");
                         this.lottoryItemDialogVisible = false;
                     }
                 )
                 .catch(error =>  { 
+                    loading.close()
                     console.log(error);
                     this.$message.error("修改项目失败");
                 });
         },
         updateLottery: function() {
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .put('http://' + this.BASE_URL + '/api/v1/admins/123/lotteries/'+ this.lottery.id, this.lottery, {headers: {'Content-Type': 'application/json'}})
                 .then(
                     () => {
+                        loading.close()
                         this.$message("修改彩票成功");
                         this.lottoryDialogVisible = false;
                     }
                 )
-                .catch(function (error) { 
+                .catch(error =>  { 
+                    loading.close()
                     console.log(error);
+                    this.$message.error("修改彩票失败");
                 });
         },
         openNewLottoryDiag: function() {

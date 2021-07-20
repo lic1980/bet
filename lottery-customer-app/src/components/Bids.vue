@@ -21,7 +21,8 @@
                             <template slot-scope="scope">
                                 <el-button
                                 size="mini"
-                                @click="acceptBid(scope.row)">收注</el-button>
+                                @click="acceptBid(scope.row)"
+                                :disabled ="bidDisabled">收注</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -38,6 +39,7 @@ import axios from 'axios'
 export default {
     data () {
         return {
+            bidDisabled: false,
             customer: { "id": "", "deposit": 0 },
             bids: [],
         }
@@ -52,6 +54,7 @@ export default {
             });
         },
         acceptBid: function(bid)  {
+            this.bidDisabled = true;
             let cusId = sessionStorage.getItem(global.CUSTOMER_ID_KEY);
             let data = {
                 status: "ACCEPTED",
@@ -69,6 +72,7 @@ export default {
                         }
                         this.bids = bids
                         this.reloadCustomer(cusId)
+                        this.bidDisabled = false;
                     })
                 .catch(error => { 
                     if (error.response.status == 400) {
@@ -77,6 +81,7 @@ export default {
                         this.$message.error("服务器错误");
                     }
                     console.log(error);
+                    this.bidDisabled = false;
                 });
         },
     },

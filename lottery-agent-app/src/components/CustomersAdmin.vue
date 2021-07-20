@@ -52,7 +52,7 @@
             </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="newExchangeDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="submitExchange()" :disabled="startExchange">确 定</el-button>
+                <el-button type="primary" @click="submitExchange()">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -77,7 +77,7 @@
             </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="newCustomerDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="addCustomer()" :disabled="startExchange">确 定</el-button>
+                <el-button type="primary" @click="addCustomer()" >确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -99,7 +99,6 @@ export default {
                 deposit: 0,
             },
             customers: [],
-            startExchange: false,
         };
     },
     methods: {
@@ -122,6 +121,12 @@ export default {
         addCustomer() {
             let agentId = sessionStorage.getItem(global.AGENT_ID_KEY);
             this.customer.agent.id = agentId;
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .post('http://' + this.BASE_URL + '/api/v1/agents/' + agentId + '/customers', this.customer, {headers: {'Content-Type': 'application/json'}})
                 .then(
@@ -129,9 +134,11 @@ export default {
                             this.$message("添加客户成功");
                             this.customers.push(response.data);
                             this.newCustomerDialogVisible = false;
+                            loading.close();
                         }
                 )
                 .catch(function (error) { 
+                    loading.close();
                     this.$message.error("添加客户失败，检查ID是否已存在");
                     console.log(error)
                 });
@@ -168,16 +175,23 @@ export default {
                 "reference": this.agent.id,
                 "amount": this.amount
             };
+            const loading = this.$loading({
+                lock: true,
+                text: '处理中...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             axios
                 .post('http://' + this.BASE_URL + '/api/v1/agents/' + this.agent.id + '/customers/' +this.customer.id+ '/exchanges', data, {headers: {'Content-Type': 'application/json'}})
                 .then(response => {
+                    loading.close()
                     let deposit = response.data;
                     for (let cus of this.customers) {
                         if (cus.id == this.customer.id) {
                            cus.deposit =  cus.deposit + deposit.amount;
                         } 
                     }
-                    this.startExchange = false;
+                    
                     if (this.amount > 0){
                         this.$message("充值成功");
                         return;
@@ -188,9 +202,10 @@ export default {
                     }
                 })
                 .catch(error => { 
-                     this.$message.error("操作失败");
+                    loading.close()
+                    this.$message.error("操作失败");
                     console.log(error);
-                    this.startExchange = false;
+                    
                 });
             this.newExchangeDialogVisible = false;
         },

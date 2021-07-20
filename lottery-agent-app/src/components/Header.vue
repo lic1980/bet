@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ul>
+       <ul v-show="currePath != '/'">
             <li><router-link :to="{ path: '/agent'}">投注站管理</router-link></li>
             <li><router-link :to="{ path: '/bid'}">投注管理</router-link></li>
             <li><router-link :to="{ path: '/customers'}">充值管理</router-link></li>
@@ -10,7 +10,14 @@
 
 <script>
 export default {
-
+    data () {
+        return {
+            currPath: "/"
+        }
+    },
+    mounted () {
+        this.currPath = this.$route.path
+    }
 }
 </script>
 
